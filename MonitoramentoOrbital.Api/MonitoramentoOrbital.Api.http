@@ -1,0 +1,67 @@
+@host = http://localhost:5115
+
+### Listar satelites (ordenados por prioridade de monitoramento)
+GET {{host}}/api/satelites
+
+### Detalhar satelite com sensores
+GET {{host}}/api/satelites/2
+
+### Cadastrar novo satelite (1=Observacao, 2=Comunicacao, 3=Meteorologico)
+POST {{host}}/api/satelites
+Content-Type: application/json
+
+{
+  "nome": "Amazonia-1",
+  "codigoInternacional": "2021-015A",
+  "tipo": 1,
+  "latitude": -5.2,
+  "longitude": -45.0,
+  "altitudeKm": 752,
+  "dataLancamento": "2021-02-28T00:00:00Z",
+  "parametroEspecifico": 0.8
+}
+
+### Acoplar sensor (Direcao: Maior = valores altos perigosos; Menor = valores baixos perigosos)
+POST {{host}}/api/satelites/2/sensores
+Content-Type: application/json
+
+{
+  "tipo": "Temperatura",
+  "unidade": "C",
+  "direcao": "Maior",
+  "limiteAtencao": 55,
+  "limiteCritico": 80
+}
+
+### Atualizar status
+PATCH {{host}}/api/satelites/2/status
+Content-Type: application/json
+
+{ "status": "Degradado" }
+
+### Registrar leitura CRITICA (gera alerta de Emergencia)
+POST {{host}}/api/satelites/2/sensores/5/leituras
+Content-Type: application/json
+
+{ "valor": 95 }
+
+### Registrar leitura NORMAL (sem alerta)
+POST {{host}}/api/satelites/2/sensores/5/leituras
+Content-Type: application/json
+
+{ "valor": 20 }
+
+### Leitura invalida (data futura) -> 422
+POST {{host}}/api/satelites/2/sensores/5/leituras
+Content-Type: application/json
+
+{ "valor": 30, "medidoEm": "2099-01-01T00:00:00Z" }
+
+### Listar alertas
+GET {{host}}/api/alertas
+
+### Historico filtrado por periodo e severidade
+GET {{host}}/api/alertas/historico?inicio=2026-06-01T00:00:00Z&severidadeMinima=Critico
+
+### Reconhecer alerta
+POST {{host}}/api/alertas/1/reconhecer
