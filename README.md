@@ -9,6 +9,8 @@ WebService REST (ASP.NET Core / .NET 10) para **monitoramento de uma constelaç�
 - Fabricio Bettarello — RM 554638
 - Enzo Miletta — RM 98677
 - Vitor Victorino Couto — RM 554965
+- Victoria Moura - RM 555474
+- Renato Luiz cordão - RM 556403
 
 ---
 
