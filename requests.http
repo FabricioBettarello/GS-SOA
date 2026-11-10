@@ -1,0 +1,35 @@
+@base = http://localhost:3000/api/v1
+
+### Health
+GET http://localhost:3000/health
+
+### Listar bairros
+GET {{base}}/bairros
+
+### Criar bairro
+POST {{base}}/bairros
+Content-Type: application/json
+
+{ "nome": "Lapa", "zona": "OESTE" }
+
+### Listar pontos de risco
+GET {{base}}/pontos-risco
+
+### Leitura enviada pelo ESP32 (nível crítico)
+POST {{base}}/leituras
+Content-Type: application/json
+
+{ "codigoSensor": "ESP32-POMPEIA-01", "nivelAguaCm": 34, "chuvaMmHora": 50 }
+
+### Alertas ativos
+GET {{base}}/alertas?ativos=true
+
+### Relato do cidadão
+POST {{base}}/relatos
+Content-Type: application/json
+
+{
+  "bairroId": "COLE-O-ID-DO-BAIRRO",
+  "descricao": "Água cobrindo a calçada na esquina",
+  "intensidade": "ALTA"
+}

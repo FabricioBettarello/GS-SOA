@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Zona {
+  CENTRO
+  NORTE
+  SUL
+  LESTE
+  OESTE
+}
+
+enum NivelAlerta {
+  ATENCAO
+  CRITICO
+}
+
+enum IntensidadeRelato {
+  BAIXA
+  MEDIA
+  ALTA
+  INTRANSITAVEL
+}
+
+enum StatusRelato {
+  ABERTO
+  CONFIRMADO
+  DESCARTADO
+}
+
+model Bairro {
+  id        String       @id @default(uuid())
+  nome      String       @unique
+  zona      Zona
+  createdAt DateTime     @default(now()) @map("created_at")
+  pontos    PontoRisco[]
+  relatos   Relato[]
+
+  @@map("bairros")
+}
+
+model PontoRisco {
+  id             String   @id @default(uuid())
+  nome           String
+  descricao      String?
+  latitude       Float
+  longitude      Float
+  nivelAtencaoCm Float    @map("nivel_atencao_cm")
+  nivelCriticoCm Float    @map("nivel_critico_cm")
+  bairroId       String   @map("bairro_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  bairro   Bairro   @relation(fields: [bairroId], references: [id])
+  sensores Sensor[]
+  alertas  Alerta[]
+  relatos  Relato[]
+
+  @@index([bairroId])
+  @@map("pontos_risco")
+}
+
+model Sensor {
+  id           String   @id @default(uuid())
+  codigo       String   @unique
+  ativo        Boolean  @default(true)
+  pontoRiscoId String   @map("ponto_risco_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  pontoRisco PontoRisco @relation(fields: [pontoRiscoId], references: [id], onDelete: Cascade)
+  leituras   Leitura[]
+
+  @@index([pontoRiscoId])
+  @@map("sensores")
+}
+
+model Leitura {
+  id           String   @id @default(uuid())
+  nivelAguaCm  Float    @map("nivel_agua_cm")
+  chuvaMmHora  Float?   @map("chuva_mm_hora")
+  registradaEm DateTime @default(now()) @map("registrada_em")
+  sensorId     String   @map("sensor_id")
+
+  sensor Sensor @relation(fields: [sensorId], references: [id], onDelete: Cascade)
+
+  @@index([sensorId, registradaEm])
+  @@map("leituras")
+}
+
+model Alerta {
+  id           String      @id @default(uuid())
+  nivel        NivelAlerta
+  mensagem     String
+  ativo        Boolean     @default(true)
+  criadoEm     DateTime    @default(now()) @map("criado_em")
+  encerradoEm  DateTime?   @map("encerrado_em")
+  pontoRiscoId String      @map("ponto_risco_id")
+
+  pontoRisco PontoRisco @relation(fields: [pontoRiscoId], references: [id], onDelete: Cascade)
+
+  @@index([pontoRiscoId, ativo])
+  @@map("alertas")
+}
+
+model Relato {
+  id           String            @id @default(uuid())
+  descricao    String
+  intensidade  IntensidadeRelato
+  status       StatusRelato      @default(ABERTO)
+  latitude     Float?
+  longitude    Float?
+  criadoEm     DateTime          @default(now()) @map("criado_em")
+  bairroId     String            @map("bairro_id")
+  pontoRiscoId String?           @map("ponto_risco_id")
+
+  bairro     Bairro      @relation(fields: [bairroId], references: [id])
+  pontoRisco PontoRisco? @relation(fields: [pontoRiscoId], references: [id], onDelete: SetNull)
+
+  @@index([bairroId, status])
+  @@map("relatos")
+}
